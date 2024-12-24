@@ -78,13 +78,9 @@ class IAmPatternsBridge extends BridgeAbstract {
     private function getPostContent($url) {
         try {
             $postHtml = getSimpleHTMLDOM($url);
-            $headerElement = $postHtml->find('.header.single-post-header.with-thumb', 0);
             $contentElement = $postHtml->find('.entry-content', 0);
 
             $content = '';
-            if ($headerElement) {
-                $content .= $headerElement->outertext;
-            }
             if ($contentElement) {
                 $content .= $contentElement->innertext;
             }

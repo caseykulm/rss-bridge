@@ -19,8 +19,7 @@ class MerchantAndMillsBridge extends BridgeAbstract {
         ]
     ]];
 
-    private function getCountryBlogPath($countryName): string
-    {
+    private function getCountryBlogPath($countryName): string {
         if ($countryName === 'European Union') {
             return '/eu/blog';
         }
@@ -36,8 +35,7 @@ class MerchantAndMillsBridge extends BridgeAbstract {
         return '/rw/blog';
     }
 
-    public function collectData()
-    {
+    public function collectData() {
         $selectedCountryKey = $this->getKey('selected_country_id');
         $selectedCountryBlogPath = $this->getCountryBlogPath($selectedCountryKey);
         $url = self::URI . $selectedCountryBlogPath;
@@ -47,46 +45,56 @@ class MerchantAndMillsBridge extends BridgeAbstract {
         foreach ($html->find('.products .post') as $post) {
             $item = [];
 
-            // Extract image
-            $image = $post->find('.post_image img', 0);
-            if ($image) {
-                // Resolve the relative image URL
-                $imageUrl = $image->src;
-                if (!str_starts_with($imageUrl, 'http')) {
-                    $imageUrl = rtrim(self::URI, '/') . '/' . ltrim($imageUrl, '/');
-                }
-                $item['image'] = $imageUrl;
-            } else {
-                $item['image'] = '';
-            }
-
-            // Extract title
+            // Extract title and URI
             $titleLink = $post->find('.post_name a', 0);
-            $item['title'] = $titleLink ? trim($titleLink->plaintext) : '';
+            $item['title'] = $titleLink ? trim($titleLink->plaintext) : 'No title';
             $item['uri'] = $titleLink ? self::URI . $titleLink->href : '';
 
-            // Extract date and views
-            $dateAndViews = $post->find('.post_date span');
-            $item['date'] = isset($dateAndViews[0]) ? trim($dateAndViews[0]->plaintext) : '';
-            $item['views'] = isset($dateAndViews[1]) ? trim(str_replace('Viewed:', '', $dateAndViews[1]->plaintext)) : '';
+            // Extract date
+            $dateElement = $post->find('.post_date span', 0);
+            $item['timestamp'] = $dateElement ? strtotime(trim($dateElement->plaintext)) : null;
 
-            // Extract description
-            $description = $post->find('.post_desc', 0);
-            $item['content'] = '';
-
-            // Add the image and description to content
-            if (!empty($item['image'])) {
-                $item['content'] .= '<div style="text-align: center; max-width: 100%; overflow: hidden;">'
-                    . '<img src="' . $item['image'] . '" alt="' . htmlspecialchars($titleLink->plaintext ?? '') . '" '
-                    . 'style="max-width: 100%; height: auto; max-height: 700px;" />'
-                    . '</div><br />';
-            }
-            if ($description) {
-                $item['content'] .= trim($description->plaintext);
+            // Extract and fetch content
+            if ($item['uri']) {
+                $item['content'] = $this->getPostContent($item['uri']);
+            } else {
+                $item['content'] = 'No content available.';
             }
 
-            // Add item to the feed
             $this->items[] = $item;
+        }
+    }
+
+    /**
+     * Fetch and parse the content of a single blog post.
+     *
+     * @param string $url The URL of the single blog post.
+     * @return string The HTML content of the post.
+     */
+    private function getPostContent(string $url): string
+    {
+        try {
+            $postHtml = getSimpleHTMLDOM($url)
+                or returnServerError('Could not fetch content from ' . $url);
+
+            $contentElement = $postHtml->find('.box.w-blog-widget-post-description', 0);
+
+            // Adjust relative URLs for images and add scaling style
+            if ($contentElement) {
+                foreach ($contentElement->find('img') as $img) {
+                    $src = $img->src;
+                    if (strpos($src, 'http') !== 0) { // If it's a relative path
+                        $img->src = self::URI . $src;
+                    }
+
+                    // Add inline styles for proper scaling
+                    $img->style = 'max-width: 100%; height: auto; display: block; margin: auto;';
+                }
+            }
+
+            return $contentElement ? $contentElement->innertext : 'Content not found.';
+        } catch (Exception $e) {
+            return 'Failed to fetch content: ' . $e->getMessage();
         }
     }
 }
