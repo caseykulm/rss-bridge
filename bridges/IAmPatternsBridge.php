@@ -92,4 +92,9 @@ class IAmPatternsBridge extends BridgeAbstract {
             return 'Failed to fetch content: ' . $e->getMessage();
         }
     }
+
+    public function getIcon(): string
+    {
+        return 'https://iampatterns.fr/wp-content/uploads/2019/02/cropped-favicon-32x32.jpg';
+    }
 }

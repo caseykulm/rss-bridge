@@ -97,4 +97,9 @@ class MerchantAndMillsBridge extends BridgeAbstract {
             return 'Failed to fetch content: ' . $e->getMessage();
         }
     }
+
+    public function getIcon(): string
+    {
+        return 'https://merchantandmills.com/uk/themes/theme-1/icons/apple-icon-57x57.png?6763';
+    }
 }
