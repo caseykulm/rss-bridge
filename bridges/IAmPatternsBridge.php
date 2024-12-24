@@ -35,7 +35,8 @@ class IAmPatternsBridge extends BridgeAbstract {
      * @param string $lang Selected language ('fr' or 'en')
      * @return string The base URL for the blog.
      */
-    private function getBaseUrl($lang) {
+    private function getBaseUrl(string $lang): string
+    {
         return $lang === 'en'
             ? 'https://iampatterns.fr/en/journal/'
             : 'https://iampatterns.fr/blog/';
@@ -44,11 +45,12 @@ class IAmPatternsBridge extends BridgeAbstract {
     /**
      * Parse an individual blog post from the listing page.
      *
-     * @param object $post The DOM element representing the blog post.
+     * @param simple_html_dom_node $post The DOM element representing the blog post.
      * @param string $baseUrl The base URL of the blog.
      * @return array An associative array representing the parsed blog post.
      */
-    private function parsePost($post, $baseUrl) {
+    private function parsePost(simple_html_dom_node $post, string $baseUrl): array
+    {
         $item = [];
         $titleElement = $post->find('.entry-title-archive a', 0);
         $descriptionElement = $post->find('.entry-content-archive p', 0);
@@ -75,7 +77,8 @@ class IAmPatternsBridge extends BridgeAbstract {
      * @param string $url The URL of the single blog post.
      * @return string The HTML content of the post, including the header and body.
      */
-    private function getPostContent($url) {
+    private function getPostContent(string $url): string
+    {
         try {
             $postHtml = getSimpleHTMLDOM($url);
             $contentElement = $postHtml->find('.entry-content', 0);
