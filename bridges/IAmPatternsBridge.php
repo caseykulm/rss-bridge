@@ -6,6 +6,7 @@ class IAmPatternsBridge extends BridgeAbstract {
     const DESCRIPTION = 'The latest blog posts from I Am Patterns.';
     const MAINTAINER = 'caseykulm';
     const CACHE_TIMEOUT = 43200; // 12 hours
+    const POST_LIMIT = 10; // Maximum number of posts to fetch
     const PARAMETERS = [[
         'lang' => [
             'name' => 'Language',
@@ -24,8 +25,14 @@ class IAmPatternsBridge extends BridgeAbstract {
         $html = getSimpleHTMLDOM($baseUrl)
             or returnServerError('Could not request ' . $baseUrl);
 
+        // Initialize a counter to limit to the maximum number of posts defined by POST_LIMIT
+        $counter = 0;
         foreach ($html->find('.blog-post') as $post) {
+            if ($counter >= self::POST_LIMIT) {
+                break; // Stop processing once the defined post limit is reached
+            }
             $this->items[] = $this->parsePost($post, $baseUrl);
+            $counter++;
         }
     }
 

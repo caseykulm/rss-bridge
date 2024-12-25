@@ -6,6 +6,7 @@ class MerchantAndMillsBridge extends BridgeAbstract {
     const DESCRIPTION = 'The latest blog posts from Merchant and Mills.';
     const MAINTAINER = 'caseykulm';
     const CACHE_TIMEOUT = 43200; // 12h
+    const POST_LIMIT = 10; // Maximum number of blog posts to fetch
     const PARAMETERS = [[
         'selected_country_id' => [
             'name' => 'Country',
@@ -42,7 +43,13 @@ class MerchantAndMillsBridge extends BridgeAbstract {
         $html = getSimpleHTMLDOM($url)
             or returnServerError('Could not request ' . $url);
 
+        // Limit processing to POST_LIMIT blog posts
+        $counter = 0;
         foreach ($html->find('.products .post') as $post) {
+            if ($counter >= self::POST_LIMIT) {
+                break; // Stop when the limit is reached
+            }
+
             $item = [];
 
             // Extract title and URI
@@ -62,6 +69,7 @@ class MerchantAndMillsBridge extends BridgeAbstract {
             }
 
             $this->items[] = $item;
+            $counter++;
         }
     }
 
