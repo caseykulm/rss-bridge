@@ -6,7 +6,7 @@ class IAmPatternsBridge extends BridgeAbstract {
     const DESCRIPTION = 'The latest blog posts from I Am Patterns.';
     const MAINTAINER = 'caseykulm';
     const CACHE_TIMEOUT = 43200; // 12 hours
-    const POST_LIMIT = 10; // Maximum number of posts to fetch
+    const POST_LIMIT = 3; // Maximum number of posts to fetch
     const PARAMETERS = [[
         'lang' => [
             'name' => 'Language',
